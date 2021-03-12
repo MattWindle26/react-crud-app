@@ -8,25 +8,46 @@ const [movieName, setMovieName] = useState('');
 const [review, setReview] = useState("");
 const [movieReviewList, setMovieReviewList] = useState([]);
 
-const submitReview = (e) => {
-  console.log("submit");
+const [newReview, setNewReview] = useState("");
+
+const submitReview = () => {
   Axios.post('http://localhost:3001/api/insert', {
   movieName: movieName,
   movieReview: review,
-  }).then(() => {
-    alert("Successfull");
-  })
+  });
+
+  setMovieReviewList([...movieReviewList, { movieName: movieName, movieReview: review }]);
+
 };
+
+const deleteReview = (movie) => {
+  Axios.delete(`http://localhost:3001/api/delete/${movie}`);
+}
+
+  // const updateReview = () =>{
+  //   console.log("FIRED");
+  // }
+
+const updateReview = (movie) => {
+  console.log(movie);
+  console.log(newReview)
+  Axios.put('http://localhost:3001/api/update', {
+    movieName: movie,
+    movieReview: newReview,
+  });
+  setNewReview("");
+};
+
 
 
 useEffect(() => {
   Axios.get('http://localhost:3001/api/get').then((response) => {
-    setMovieReviewList(response.data)
+    setMovieReviewList(response.data);
   });
 }, []);
 
   return (
-    <div className="App"> 
+    <div className="App container"> 
       <form action="">
         <label htmlFor="">Movie Name</label>
         <input 
@@ -44,19 +65,33 @@ useEffect(() => {
           setReview(e.target.value);
           }} 
         />
-        <button type="submit" onClick={submitReview} >Send</button>
+        <button type="submit" onClick={() => {submitReview()}} >Send</button>
       </form>
 
-      <ul>
-      {movieReviewList.map((data) => {
+        {movieReviewList && movieReviewList.map((data) => {
         return ( 
-          <li key={data.id}>
-          <p>Movie Name : {data.movieName}</p>
-          <p>Review: {data.movieReview}</p>
-          </li>
+
+          <div className="card" key={data.id}>
+              <div className="card-body">
+                <h5 className="card-title">{data.movieName}</h5>
+                <p className="card-text">{data.movieReview}</p>
+                <button className="btn btn-primary" onClick={() => {deleteReview(data.movieName)}} >Delete</button>
+                <br></br>
+                <input 
+                type="text" 
+                name="" 
+                id=""
+                onChange={(e) => {
+                setNewReview(e.target.value)
+                }}
+                />
+              <button className="btn btn-primary" onClick={ () => {updateReview(data.movieName) }} >Update</button>
+              </div>
+          </div>
+
+
         )
       })}
-      </ul>
 
     </div>
   );
